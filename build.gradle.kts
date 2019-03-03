@@ -17,8 +17,9 @@ repositories {
 }
 
 dependencies {
-    api("javax:javaee-api:7.0")
+    compileOnly("javax:javaee-api:7.0")
     implementation(kotlin("stdlib-jdk8"))
+    testImplementation("javax:javaee-api:7.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.4.0")
     testImplementation("org.mockito:mockito-core:2.24.5")
 }
@@ -56,7 +57,7 @@ tasks.register("sourcesJar", Jar::class) {
 
 publishing {
     publications {
-        create("CORSFilter", MavenPublication::class) {
+        create<MavenPublication>("CORSFilter") {
 
             groupId = "${properties["CORSFilter.GroupID"]}"
             artifactId = "${properties["CORSFilter.ArtifactID"]}"
