@@ -1,0 +1,12 @@
+LICENSE         text eol=crlf
+NOTICE          text eol=crlf
+README          text eol=crlf
+
+gradlew         text eol=lf
+gradlew.bat     text eol=crlf
+
+*.kt            text
+*.kts           text
+*.java          text
+*.properties    text
+*.xml           text
