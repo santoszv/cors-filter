@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Santos Zatarain Vera <coder.santoszv(at)gmail.com>
+ * Copyright 2019 Santos Zatarain Vera (coder.santoszv_at_gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ const val RESP_HEADER_AC_MAX_AGE = "Access-Control-Max-Age"
  */
 const val RESP_HEADER_AC_ALLOW_METHODS = "Access-Control-Allow-Methods"
 /**
- * Access-Control-Allow-Methods response header.
+ * Access-Control-Allow-Headers response header.
  *
  * Present in response to an preflight request.
  */
@@ -95,8 +95,8 @@ open class CORSServletFilter : AbstractCORSServletFilter() {
     /**
      * Init.
      *
-     * Init parameter "policies" is used for loading CORS policies from an XML
-     * file in classpath. The init parameter value must comply with
+     * Init parameter "cors-policies" is used for loading CORS policies from an
+     * XML file in classpath. The init parameter value must comply with
      * [ClassLoader.getResourceAsStream] semantics.
      */
     override fun init(filterConfig: FilterConfig) {

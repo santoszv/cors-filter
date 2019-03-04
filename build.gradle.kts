@@ -37,20 +37,20 @@ tasks.withType<Test> {
 }
 
 tasks.withType<DokkaTask> {
-    outputFormat = "javadoc"
-    outputDirectory = "$buildDir/dokka/javadoc"
-    includes = listOf("packages.md")
+    moduleName = ""
+    includes = listOf("module.md", "packages.md")
     jdkVersion = 8
     externalDocumentationLinks.add(ExternalDocumentationLinkImpl(URL("https://docs.oracle.com/javaee/7/api/"), URL("https://docs.oracle.com/javaee/7/api/package-list")))
 }
 
-tasks.register("javadocJar", Jar::class) {
+tasks.register<Jar>("javadocJar") {
     archiveClassifier.set("javadoc")
-    from("$buildDir/dokka/javadoc")
-    dependsOn("dokka")
+    from("$projectDir") {
+        include("README")
+    }
 }
 
-tasks.register("sourcesJar", Jar::class) {
+tasks.register<Jar>("sourcesJar") {
     archiveClassifier.set("sources")
     val sourceSet = sourceSets.main.get()
     from(sourceSet.allSource)
