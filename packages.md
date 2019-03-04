@@ -1,10 +1,6 @@
 # Package mx.com.inftel.cors
 
-Cross-Origin Resource Sharing
-
-http://www.w3.org/TR/2014/REC-cors-20140116/
-
-Copyright 2014 W3C (MIT, ERCIM, Keio, Beihang), All Rights Reserved.
+Cross-Origin Resource Sharing.
 
 User agents commonly apply same-origin restrictions to network requests. These
 restrictions prevent a client-side Web application running from one origin from
@@ -37,3 +33,13 @@ This specification extends this model in several ways:
   This extension enables server-side applications to enforce limitations (e.g.
   returning nothing) on the cross-origin requests that they are willing to
   service.
+
+**NOTICE**
+
+Copyright 2019 Santos Zatarain Vera &lt;coder.santoszv(at)gmail.com&gt;. This
+product includes coded software by Santos Zatarain Vera and licensed under the
+Apache License, Version 2.0 (https://github.com/santoszv/cors-filter).
+
+Copyright (C) 2015 W3C (R) (MIT, ERCIM, Keio, Beihang). This software or
+document includes material copied from or derived from Cross-Origin
+Resource Sharing W3C Recommendation (https://www.w3.org/TR/cors/).
