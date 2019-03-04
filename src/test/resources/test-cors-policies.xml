@@ -1,0 +1,27 @@
+<cors-policies>
+    <origins>
+        <origin>abc</origin>
+        <origin>def</origin>
+        <origin>ghi</origin>
+    </origins>
+    <methods>
+        <method>OPTIONS</method>
+        <method>HEAD</method>
+        <method>GET</method>
+        <method>POST</method>
+    </methods>
+    <headers>
+        <header>Authorization</header>
+        <header>X-CSRF</header>
+        <header>X-Requested-With</header>
+    </headers>
+    <exposed-headers>
+        <header>Content-Length</header>
+        <header>WWW-Authenticate</header>
+        <header>Server-Authenticate</header>
+    </exposed-headers>
+    <supports-credentials>true</supports-credentials>
+    <access-control-max-age>-1</access-control-max-age>
+    <preflight-continue-chain>true</preflight-continue-chain>
+    <preflight-prefer-no-content>true</preflight-prefer-no-content>
+</cors-policies>

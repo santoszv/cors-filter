@@ -19,6 +19,9 @@ package mx.com.inftel.cors
 import javax.servlet.*
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import javax.xml.bind.JAXB
+import javax.xml.bind.annotation.*
+import javax.xml.transform.stream.StreamSource
 
 /**
  * Origin request header.
@@ -85,61 +88,35 @@ const val RESP_HEADER_VARY = "Vary"
 /**
  * Cross-Origin Resource Sharing (CORS) Web Filter.
  */
+open class CORSServletFilter : AbstractCORSServletFilter() {
+
+    override lateinit var policies: CORSPolicies
+
+    /**
+     * Init.
+     *
+     * Init parameter "policies" is used for loading CORS policies from an XML
+     * file in classpath. The init parameter value must comply with
+     * [ClassLoader.getResourceAsStream] semantics.
+     */
+    override fun init(filterConfig: FilterConfig) {
+        val policies = filterConfig.getInitParameter("cors-policies")
+                ?: throw IllegalArgumentException("Init parameter 'cors-policies' is missing.")
+        Thread.currentThread().contextClassLoader.getResourceAsStream(policies).use {
+            this.policies = JAXB.unmarshal(StreamSource(it), CORSPoliciesElement::class.java)
+        }
+    }
+}
+
+/**
+ * Cross-Origin Resource Sharing (CORS) Abstract Web Filter.
+ */
 abstract class AbstractCORSServletFilter : Filter {
 
     /**
-     * List of origins. A list of origins consisting of zero or more origins
-     * that are allowed access to the resource.
-     *
-     * An empty list is considered an unbounded list of origins.
+     * Cross-Origin Resource Sharing (CORS) Policies
      */
-    protected abstract val listOfOrigins: List<String>
-    /**
-     * List of methods. A list of methods consisting of zero or more methods
-     * that are supported by the resource.
-     *
-     * An empty list is considered an unbounded list of methods.
-     */
-    protected abstract val listOfMethods: List<String>
-    /**
-     * List of headers. A list of headers consisting of zero or more header
-     * field names that are supported by the resource.
-     *
-     * An empty list is considered an unbounded list of headers.
-     */
-    protected abstract val listOfHeaders: List<String>
-    /**
-     * List of exposed headers. A list of exposed headers consisting of zero or
-     * more header field names of headers other than the simple response
-     * headers that the resource might use and can be exposed.
-     *
-     * An empty list will not add any exposed header to response.
-     */
-    protected abstract val listOfExposedHeaders: List<String>
-    /**
-     * Supports credentials. A supports credentials flag that indicates whether
-     * the resource supports user credentials in the request. It is true when
-     * the resource does and false otherwise.
-     */
-    protected abstract val supportsCredentials: Boolean
-    /**
-     * Access control max age.
-     */
-    protected abstract val accessControlMaxAge: Int
-    /**
-     * Preflight should continue filter chain.
-     *
-     * A value of "true" will call "filter.doChain()", a value of "false"
-     * will just set the status in response.
-     */
-    protected abstract val preflightContinueChain: Boolean
-    /**
-     * Preflight should use status 204.
-     *
-     * A value of "true" will set status in response to 204, a value of "false"
-     * will set status in response to 200.
-     */
-    protected abstract val preflightPreferNoContent: Boolean
+    protected abstract val policies: CORSPolicies
 
     /**
      * Init.
@@ -173,8 +150,8 @@ abstract class AbstractCORSServletFilter : Filter {
             return
         }
         // Step 2
-        if (listOfOrigins.isNotEmpty()) {
-            val match = listOfOrigins.firstOrNull {
+        if (policies.listOfOrigins.isNotEmpty()) {
+            val match = policies.listOfOrigins.firstOrNull {
                 it.equals(originHeader, true)
             }
             if (match == null) {
@@ -183,7 +160,7 @@ abstract class AbstractCORSServletFilter : Filter {
             }
         }
         // Step 3
-        if (supportsCredentials) {
+        if (policies.supportsCredentials) {
             response.setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, originHeader)
             response.setHeader(RESP_HEADER_AC_ALLOW_CREDENTIALS, "true")
             response.setHeader(RESP_HEADER_VARY, REQ_HEADER_ORIGIN)
@@ -191,8 +168,8 @@ abstract class AbstractCORSServletFilter : Filter {
             response.setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
         }
         // Step 4
-        if (listOfExposedHeaders.isNotEmpty()) {
-            response.setHeader(RESP_HEADER_AC_EXPOSE_HEADERS, listOfExposedHeaders.joinToString(", "))
+        if (policies.listOfExposedHeaders.isNotEmpty()) {
+            response.setHeader(RESP_HEADER_AC_EXPOSE_HEADERS, policies.listOfExposedHeaders.joinToString(", "))
         }
         // Continue filter chain
         chain.doFilter(request, response)
@@ -209,8 +186,8 @@ abstract class AbstractCORSServletFilter : Filter {
             return
         }
         // Step 2
-        if (listOfOrigins.isNotEmpty()) {
-            val match = listOfOrigins.firstOrNull {
+        if (policies.listOfOrigins.isNotEmpty()) {
+            val match = policies.listOfOrigins.firstOrNull {
                 it.equals(originHeader, true)
             }
             if (match == null) {
@@ -239,8 +216,8 @@ abstract class AbstractCORSServletFilter : Filter {
                 }
                 .toList()
         // Step 5
-        if (listOfMethods.isNotEmpty()) {
-            val match = listOfMethods.firstOrNull {
+        if (policies.listOfMethods.isNotEmpty()) {
+            val match = policies.listOfMethods.firstOrNull {
                 it.equals(method, false)
             }
             if (match == null) {
@@ -249,9 +226,9 @@ abstract class AbstractCORSServletFilter : Filter {
             }
         }
         // Step 6
-        if (listOfHeaders.isNotEmpty()) {
+        if (policies.listOfHeaders.isNotEmpty()) {
             headerFieldNames.forEach { headerFieldName ->
-                val match = listOfHeaders.firstOrNull {
+                val match = policies.listOfHeaders.firstOrNull {
                     it.equals(headerFieldName, true)
                 }
                 if (match == null) {
@@ -261,7 +238,7 @@ abstract class AbstractCORSServletFilter : Filter {
             }
         }
         // Step 7
-        if (supportsCredentials) {
+        if (policies.supportsCredentials) {
             response.setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, originHeader)
             response.setHeader(RESP_HEADER_AC_ALLOW_CREDENTIALS, "true")
             response.setHeader(RESP_HEADER_VARY, REQ_HEADER_ORIGIN)
@@ -269,25 +246,25 @@ abstract class AbstractCORSServletFilter : Filter {
             response.setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
         }
         // Step 8
-        if (accessControlMaxAge >= 0) {
-            response.setHeader(RESP_HEADER_AC_MAX_AGE, "$accessControlMaxAge")
+        if (policies.accessControlMaxAge >= 0) {
+            response.setHeader(RESP_HEADER_AC_MAX_AGE, "${policies.accessControlMaxAge}")
         }
         // Step 9
-        if (listOfMethods.isNotEmpty()) {
-            response.setHeader(RESP_HEADER_AC_ALLOW_METHODS, listOfMethods.joinToString(", "))
+        if (policies.listOfMethods.isNotEmpty()) {
+            response.setHeader(RESP_HEADER_AC_ALLOW_METHODS, policies.listOfMethods.joinToString(", "))
         } else {
             response.setHeader(RESP_HEADER_AC_ALLOW_METHODS, method)
         }
         // Step 10
-        if (listOfHeaders.isNotEmpty()) {
-            response.setHeader(RESP_HEADER_AC_ALLOW_HEADERS, listOfHeaders.joinToString(", "))
+        if (policies.listOfHeaders.isNotEmpty()) {
+            response.setHeader(RESP_HEADER_AC_ALLOW_HEADERS, policies.listOfHeaders.joinToString(", "))
         } else if (headerFieldNames.isNotEmpty()) {
             response.setHeader(RESP_HEADER_AC_ALLOW_HEADERS, headerFieldNames.joinToString(", "))
         }
         // Continue filter chain or set response status
         when {
-            preflightContinueChain -> chain.doFilter(request, response)
-            preflightPreferNoContent -> response.status = HttpServletResponse.SC_NO_CONTENT
+            policies.preflightContinueChain -> chain.doFilter(request, response)
+            policies.preflightPreferNoContent -> response.status = HttpServletResponse.SC_NO_CONTENT
             else -> response.status = HttpServletResponse.SC_OK
         }
     }
@@ -300,4 +277,129 @@ abstract class AbstractCORSServletFilter : Filter {
     override fun destroy() {
         // NO-OP
     }
+}
+
+/**
+ * XML Element for Cross-Origin Resource Sharing (CORS) Policies.
+ *
+ * ```
+ * &lt;cors-policies&gt;
+ *     &lt;origins&gt;
+ *         &lt;origin&gt;...&lt;/origin&gt;
+ *         &lt;origin&gt;...&lt;/origin&gt;
+ *         &lt;origin&gt;...&lt;/origin&gt;
+ *     &lt;/origins&gt;
+ *     &lt;methods&gt;
+ *         &lt;method&gt;...&lt;/method&gt;
+ *         &lt;method&gt;...&lt;/method&gt;
+ *         &lt;method&gt;...&lt;/method&gt;
+ *     &lt;/methods&gt;
+ *     &lt;headers&gt;
+ *         &lt;header&gt;...&lt;/header&gt;
+ *         &lt;header&gt;...&lt;/header&gt;
+ *         &lt;header&gt;...&lt;/header&gt;
+ *     &lt;/headers&gt;
+ *     &lt;exposed-headers&gt;
+ *         &lt;header&gt;...&lt;/header&gt;
+ *         &lt;header&gt;...&lt;/header&gt;
+ *         &lt;header&gt;...&lt;/header&gt;
+ *     &lt;/exposed-headers&gt;
+ *     &lt;supports-credentials&gt;false&lt;/supports-credentials&gt;
+ *     &lt;access-control-max-age&gt;-1&lt;/access-control-max-age&gt;
+ *     &lt;preflight-continue-chain&gt;false&lt;/preflight-continue-chain&gt;
+ *     &lt;preflight-prefer-no-content&gt;false&lt;/preflight-prefer-no-content&gt;
+ * &lt;/cors-policies&gt;
+ * ```
+ */
+@XmlRootElement(name = "cors-policies")
+@XmlType(name = "cors-policies")
+@XmlAccessorType(XmlAccessType.PROPERTY)
+class CORSPoliciesElement : CORSPolicies {
+
+    @get:XmlElementWrapper(name = "origins", nillable = false, required = false)
+    @get:XmlElement(name = "origin", nillable = false, required = false)
+    override var listOfOrigins: MutableList<String> = mutableListOf()
+
+    @get:XmlElementWrapper(name = "methods", nillable = false, required = false)
+    @get:XmlElement(name = "method", nillable = false, required = false)
+    override var listOfMethods: MutableList<String> = mutableListOf()
+
+    @get:XmlElementWrapper(name = "headers", nillable = false, required = false)
+    @get:XmlElement(name = "header", nillable = false, required = false)
+    override var listOfHeaders: MutableList<String> = mutableListOf()
+
+    @get:XmlElementWrapper(name = "exposed-headers", nillable = false, required = false)
+    @get:XmlElement(name = "header", nillable = false, required = false)
+    override var listOfExposedHeaders: MutableList<String> = mutableListOf()
+
+    @get:XmlElement(name = "supports-credentials", nillable = false, required = false)
+    override var supportsCredentials: Boolean = false
+
+    @get:XmlElement(name = "access-control-max-age", nillable = false, required = false)
+    override var accessControlMaxAge: Int = -1
+
+    @get:XmlElement(name = "preflight-continue-chain", nillable = false, required = false)
+    override var preflightContinueChain: Boolean = false
+
+    @get:XmlElement(name = "preflight-prefer-no-content", nillable = false, required = false)
+    override var preflightPreferNoContent: Boolean = false
+}
+
+/**
+ * Cross-Origin Resource Sharing (CORS) Policies
+ */
+interface CORSPolicies {
+    /**
+     * List of origins. A list of origins consisting of zero or more origins
+     * that are allowed access to the resource.
+     *
+     * An empty list is considered an unbounded list of origins.
+     */
+    val listOfOrigins: List<String>
+    /**
+     * List of methods. A list of methods consisting of zero or more methods
+     * that are supported by the resource.
+     *
+     * An empty list is considered an unbounded list of methods.
+     */
+    val listOfMethods: List<String>
+    /**
+     * List of headers. A list of headers consisting of zero or more header
+     * field names that are supported by the resource.
+     *
+     * An empty list is considered an unbounded list of headers.
+     */
+    val listOfHeaders: List<String>
+    /**
+     * List of exposed headers. A list of exposed headers consisting of zero or
+     * more header field names of headers other than the simple response
+     * headers that the resource might use and can be exposed.
+     *
+     * An empty list will not add any exposed header to response.
+     */
+    val listOfExposedHeaders: List<String>
+    /**
+     * Supports credentials. A supports credentials flag that indicates whether
+     * the resource supports user credentials in the request. It is true when
+     * the resource does and false otherwise.
+     */
+    val supportsCredentials: Boolean
+    /**
+     * Access control max age.
+     */
+    val accessControlMaxAge: Int
+    /**
+     * Preflight should continue filter chain.
+     *
+     * A value of "true" will call "filter.doChain()", a value of "false"
+     * will just set the status in response.
+     */
+    val preflightContinueChain: Boolean
+    /**
+     * Preflight should use status 204.
+     *
+     * A value of "true" will set status in response to 204, a value of "false"
+     * will set status in response to 200.
+     */
+    val preflightPreferNoContent: Boolean
 }
