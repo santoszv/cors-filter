@@ -55,12 +55,12 @@ class ActualRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("POST")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
         verify(filterChain).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -71,14 +71,14 @@ class ActualRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("POST")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.policies.supportsCredentials = true
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "http://abc.com:8080/")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_CREDENTIALS, "true")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "http://abc.com:8080")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Credentials", "true")
         verify(filterChain).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -89,13 +89,13 @@ class ActualRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("POST")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
 
         val corsServletFilter = TestCORSServletFilter()
-        corsServletFilter.policies.listOfOrigins = listOf("http://abc.com:8080/")
+        corsServletFilter.policies.listOfOrigins = listOf("http://abc.com:8080")
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
         verify(filterChain).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -106,10 +106,10 @@ class ActualRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("POST")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
 
         val corsServletFilter = TestCORSServletFilter()
-        corsServletFilter.policies.listOfOrigins = listOf("http://def.com:8080/")
+        corsServletFilter.policies.listOfOrigins = listOf("http://def.com:8080")
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
         verify(httpServletResponse, never()).setHeader(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())
@@ -124,14 +124,14 @@ class ActualRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("POST")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.policies.listOfExposedHeaders = listOf("Content-Length", "WWW-Authenticate", "Server-Authorization")
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_EXPOSE_HEADERS, "Content-Length, WWW-Authenticate, Server-Authorization")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse).setHeader("Access-Control-Expose-Headers", "Content-Length, WWW-Authenticate, Server-Authorization")
         verify(filterChain).doFilter(httpServletRequest, httpServletResponse)
     }
 }
@@ -145,7 +145,7 @@ class OptionsRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("OPTIONS")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
@@ -165,17 +165,17 @@ class PreflightRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("OPTIONS")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_AC_REQUEST_METHOD)).thenReturn("POST")
-        `when`(httpServletRequest.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)).thenReturn(Collections.emptyEnumeration())
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
+        `when`(httpServletRequest.getHeader("Access-Control-Request-Method")).thenReturn("POST")
+        `when`(httpServletRequest.getHeaders("Access-Control-Request-Headers")).thenReturn(Collections.emptyEnumeration())
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_METHODS, "POST")
-        verify(httpServletResponse, never()).setHeader(RESP_HEADER_AC_ALLOW_HEADERS, "")
-        verify(httpServletResponse, never()).setHeader(RESP_HEADER_AC_MAX_AGE, "")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse, never()).setHeader("Access-Control-Allow-Headers", "")
+        verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
         verify(httpServletResponse).status = HttpServletResponse.SC_OK
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
@@ -187,17 +187,17 @@ class PreflightRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("OPTIONS")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_AC_REQUEST_METHOD)).thenReturn("POST")
-        `when`(httpServletRequest.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)).thenReturn(Collections.enumeration(listOf("X-CSRF", "X-Requested-With")))
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
+        `when`(httpServletRequest.getHeader("Access-Control-Request-Method")).thenReturn("POST")
+        `when`(httpServletRequest.getHeaders("Access-Control-Request-Headers")).thenReturn(Collections.enumeration(listOf("X-CSRF", "X-Requested-With")))
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_METHODS, "POST")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_HEADERS, "X-CSRF, X-Requested-With")
-        verify(httpServletResponse, never()).setHeader(RESP_HEADER_AC_MAX_AGE, "")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Headers", "X-CSRF, X-Requested-With")
+        verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
         verify(httpServletResponse).status = HttpServletResponse.SC_OK
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
@@ -209,18 +209,18 @@ class PreflightRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("OPTIONS")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_AC_REQUEST_METHOD)).thenReturn("POST")
-        `when`(httpServletRequest.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)).thenReturn(Collections.emptyEnumeration())
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
+        `when`(httpServletRequest.getHeader("Access-Control-Request-Method")).thenReturn("POST")
+        `when`(httpServletRequest.getHeaders("Access-Control-Request-Headers")).thenReturn(Collections.emptyEnumeration())
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.policies.accessControlMaxAge = 300
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_METHODS, "POST")
-        verify(httpServletResponse, never()).setHeader(RESP_HEADER_AC_ALLOW_HEADERS, "")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_MAX_AGE, "300")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse, never()).setHeader("Access-Control-Allow-Headers", "")
+        verify(httpServletResponse).setHeader("Access-Control-Max-Age", "300")
         verify(httpServletResponse).status = HttpServletResponse.SC_OK
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
@@ -232,18 +232,18 @@ class PreflightRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("OPTIONS")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_AC_REQUEST_METHOD)).thenReturn("POST")
-        `when`(httpServletRequest.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)).thenReturn(Collections.emptyEnumeration())
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
+        `when`(httpServletRequest.getHeader("Access-Control-Request-Method")).thenReturn("POST")
+        `when`(httpServletRequest.getHeaders("Access-Control-Request-Headers")).thenReturn(Collections.emptyEnumeration())
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.policies.preflightContinueChain = true
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_METHODS, "POST")
-        verify(httpServletResponse, never()).setHeader(RESP_HEADER_AC_ALLOW_HEADERS, "")
-        verify(httpServletResponse, never()).setHeader(RESP_HEADER_AC_MAX_AGE, "")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse, never()).setHeader("Access-Control-Allow-Headers", "")
+        verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
         verify(filterChain).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -254,18 +254,18 @@ class PreflightRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("OPTIONS")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_AC_REQUEST_METHOD)).thenReturn("POST")
-        `when`(httpServletRequest.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)).thenReturn(Collections.emptyEnumeration())
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
+        `when`(httpServletRequest.getHeader("Access-Control-Request-Method")).thenReturn("POST")
+        `when`(httpServletRequest.getHeaders("Access-Control-Request-Headers")).thenReturn(Collections.emptyEnumeration())
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.policies.preflightPreferNoContent = true
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_METHODS, "POST")
-        verify(httpServletResponse, never()).setHeader(RESP_HEADER_AC_ALLOW_HEADERS, "")
-        verify(httpServletResponse, never()).setHeader(RESP_HEADER_AC_MAX_AGE, "")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse, never()).setHeader("Access-Control-Allow-Headers", "")
+        verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
         verify(httpServletResponse).status = HttpServletResponse.SC_NO_CONTENT
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
@@ -277,19 +277,19 @@ class PreflightRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("OPTIONS")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_AC_REQUEST_METHOD)).thenReturn("POST")
-        `when`(httpServletRequest.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)).thenReturn(Collections.emptyEnumeration())
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
+        `when`(httpServletRequest.getHeader("Access-Control-Request-Method")).thenReturn("POST")
+        `when`(httpServletRequest.getHeaders("Access-Control-Request-Headers")).thenReturn(Collections.emptyEnumeration())
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.policies.supportsCredentials = true
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "http://abc.com:8080/")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_CREDENTIALS, "true")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_METHODS, "POST")
-        verify(httpServletResponse, never()).setHeader(RESP_HEADER_AC_ALLOW_HEADERS, "")
-        verify(httpServletResponse, never()).setHeader(RESP_HEADER_AC_MAX_AGE, "")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "http://abc.com:8080")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Credentials", "true")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse, never()).setHeader("Access-Control-Allow-Headers", "")
+        verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
         verify(httpServletResponse).status = HttpServletResponse.SC_OK
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
@@ -301,18 +301,18 @@ class PreflightRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("OPTIONS")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_AC_REQUEST_METHOD)).thenReturn("POST")
-        `when`(httpServletRequest.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)).thenReturn(Collections.emptyEnumeration())
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
+        `when`(httpServletRequest.getHeader("Access-Control-Request-Method")).thenReturn("POST")
+        `when`(httpServletRequest.getHeaders("Access-Control-Request-Headers")).thenReturn(Collections.emptyEnumeration())
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.policies.listOfMethods = listOf("GET", "POST")
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_METHODS, "GET, POST")
-        verify(httpServletResponse, never()).setHeader(RESP_HEADER_AC_ALLOW_HEADERS, "")
-        verify(httpServletResponse, never()).setHeader(RESP_HEADER_AC_MAX_AGE, "")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "GET, POST")
+        verify(httpServletResponse, never()).setHeader("Access-Control-Allow-Headers", "")
+        verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
         verify(httpServletResponse).status = HttpServletResponse.SC_OK
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
@@ -324,9 +324,9 @@ class PreflightRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("OPTIONS")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_AC_REQUEST_METHOD)).thenReturn("POST")
-        `when`(httpServletRequest.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)).thenReturn(Collections.emptyEnumeration())
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
+        `when`(httpServletRequest.getHeader("Access-Control-Request-Method")).thenReturn("POST")
+        `when`(httpServletRequest.getHeaders("Access-Control-Request-Headers")).thenReturn(Collections.emptyEnumeration())
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.policies.listOfMethods = listOf("PUT", "DELETE")
@@ -344,18 +344,18 @@ class PreflightRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("OPTIONS")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_AC_REQUEST_METHOD)).thenReturn("POST")
-        `when`(httpServletRequest.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)).thenReturn(Collections.enumeration(listOf("Authorization")))
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
+        `when`(httpServletRequest.getHeader("Access-Control-Request-Method")).thenReturn("POST")
+        `when`(httpServletRequest.getHeaders("Access-Control-Request-Headers")).thenReturn(Collections.enumeration(listOf("Authorization")))
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.policies.listOfHeaders = listOf("Authorization", "X-Requested-With")
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_METHODS, "POST")
-        verify(httpServletResponse).setHeader(RESP_HEADER_AC_ALLOW_HEADERS, "Authorization, X-Requested-With")
-        verify(httpServletResponse, never()).setHeader(RESP_HEADER_AC_MAX_AGE, "")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse).setHeader("Access-Control-Allow-Headers", "Authorization, X-Requested-With")
+        verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
         verify(httpServletResponse).status = HttpServletResponse.SC_OK
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
@@ -367,9 +367,9 @@ class PreflightRequest {
         val filterChain = mock(FilterChain::class.java)
 
         `when`(httpServletRequest.method).thenReturn("OPTIONS")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_ORIGIN)).thenReturn("http://abc.com:8080/")
-        `when`(httpServletRequest.getHeader(REQ_HEADER_AC_REQUEST_METHOD)).thenReturn("POST")
-        `when`(httpServletRequest.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)).thenReturn(Collections.enumeration(listOf("X-CSRF")))
+        `when`(httpServletRequest.getHeader("Origin")).thenReturn("http://abc.com:8080")
+        `when`(httpServletRequest.getHeader("Access-Control-Request-Method")).thenReturn("POST")
+        `when`(httpServletRequest.getHeaders("Access-Control-Request-Headers")).thenReturn(Collections.enumeration(listOf("X-CSRF")))
 
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.policies.listOfHeaders = listOf("Authorization", "X-Requested-With")
@@ -401,55 +401,55 @@ class XML {
         corsServletFilter.init(filterConfig)
 
         if (corsServletFilter.policies.listOfOrigins[0] != "abc") {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (corsServletFilter.policies.listOfOrigins[1] != "def") {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (corsServletFilter.policies.listOfOrigins[2] != "ghi") {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (corsServletFilter.policies.listOfMethods[0] != "OPTIONS") {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (corsServletFilter.policies.listOfMethods[1] != "HEAD") {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (corsServletFilter.policies.listOfMethods[2] != "GET") {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (corsServletFilter.policies.listOfMethods[3] != "POST") {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (corsServletFilter.policies.listOfHeaders[0] != "Authorization") {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (corsServletFilter.policies.listOfHeaders[1] != "X-CSRF") {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (corsServletFilter.policies.listOfHeaders[2] != "X-Requested-With") {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (corsServletFilter.policies.listOfExposedHeaders[0] != "Content-Length") {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (corsServletFilter.policies.listOfExposedHeaders[1] != "WWW-Authenticate") {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (corsServletFilter.policies.listOfExposedHeaders[2] != "Server-Authenticate") {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (!corsServletFilter.policies.supportsCredentials) {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (corsServletFilter.policies.accessControlMaxAge != -1) {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (!corsServletFilter.policies.preflightContinueChain) {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
         if (!corsServletFilter.policies.preflightPreferNoContent) {
-            throw Exception()
+            throw Exception("Error loading XML")
         }
     }
 }
