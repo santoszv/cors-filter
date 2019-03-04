@@ -75,6 +75,12 @@ const val RESP_HEADER_AC_ALLOW_METHODS = "Access-Control-Allow-Methods"
  * Present in response to an preflight request.
  */
 const val RESP_HEADER_AC_ALLOW_HEADERS = "Access-Control-Allow-Methods"
+/**
+ * Vary response header.
+ *
+ * May be present in response to an actual request.
+ */
+const val RESP_HEADER_VARY = "Vary"
 
 /**
  * Cross-Origin Resource Sharing (CORS) Web Filter.
@@ -180,6 +186,7 @@ abstract class AbstractCORSServletFilter : Filter {
         if (supportsCredentials) {
             response.setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, originHeader)
             response.setHeader(RESP_HEADER_AC_ALLOW_CREDENTIALS, "true")
+            response.setHeader(RESP_HEADER_VARY, REQ_HEADER_ORIGIN)
         } else {
             response.setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
         }
@@ -257,6 +264,7 @@ abstract class AbstractCORSServletFilter : Filter {
         if (supportsCredentials) {
             response.setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, originHeader)
             response.setHeader(RESP_HEADER_AC_ALLOW_CREDENTIALS, "true")
+            response.setHeader(RESP_HEADER_VARY, REQ_HEADER_ORIGIN)
         } else {
             response.setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
         }
