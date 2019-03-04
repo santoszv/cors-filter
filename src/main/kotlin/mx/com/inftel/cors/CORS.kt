@@ -77,7 +77,7 @@ const val RESP_HEADER_AC_ALLOW_METHODS = "Access-Control-Allow-Methods"
  *
  * Present in response to an preflight request.
  */
-const val RESP_HEADER_AC_ALLOW_HEADERS = "Access-Control-Allow-Methods"
+const val RESP_HEADER_AC_ALLOW_HEADERS = "Access-Control-Allow-Headers"
 /**
  * Vary response header.
  *
