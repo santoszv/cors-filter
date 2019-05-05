@@ -81,7 +81,7 @@ publishing {
                     developer {
                         id.set("https://github.com/santoszv")
                         name.set("Santos Zatarain Vera")
-                        email.set("coder.santoszv@gmail.com")
+                        email.set("coder.santoszv(at)gmail.com")
                     }
                 }
                 scm {
@@ -114,7 +114,7 @@ publishing {
                 }
             }
         } else {
-            mavenLocal()
+            maven("$buildDir/repository")
         }
     }
 }
