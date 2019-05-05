@@ -1,7 +1,5 @@
-import org.jetbrains.dokka.ExternalDocumentationLinkImpl
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.net.URL
 
 plugins {
     kotlin("jvm") version "1.3.31"
@@ -43,7 +41,6 @@ tasks.withType<DokkaTask> {
     outputDirectory = "$buildDir/dokka/javadoc"
     includes = listOf("module.md", "packages.md")
     jdkVersion = 8
-    externalDocumentationLinks.add(ExternalDocumentationLinkImpl(URL("https://docs.oracle.com/javaee/8/api/"), URL("https://docs.oracle.com/javaee/8/api/package-list")))
 }
 
 tasks.register<Jar>("javadocJar") {
