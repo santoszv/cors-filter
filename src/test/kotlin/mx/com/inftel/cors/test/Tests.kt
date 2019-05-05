@@ -60,7 +60,7 @@ class ActualRequest {
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Origin", "*")
         verify(filterChain).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -77,8 +77,8 @@ class ActualRequest {
         corsServletFilter.policies.supportsCredentials = true
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "http://abc.com:8080")
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Credentials", "true")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Origin", "http://abc.com:8080")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Credentials", "true")
         verify(filterChain).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -95,7 +95,7 @@ class ActualRequest {
         corsServletFilter.policies.listOfOrigins = listOf("http://abc.com:8080")
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Origin", "*")
         verify(filterChain).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -130,8 +130,8 @@ class ActualRequest {
         corsServletFilter.policies.listOfExposedHeaders = listOf("Content-Length", "WWW-Authenticate", "Server-Authorization")
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
-        verify(httpServletResponse).setHeader("Access-Control-Expose-Headers", "Content-Length, WWW-Authenticate, Server-Authorization")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Expose-Headers", "Content-Length, WWW-Authenticate, Server-Authorization")
         verify(filterChain).doFilter(httpServletRequest, httpServletResponse)
     }
 }
@@ -172,11 +172,11 @@ class PreflightRequest {
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Methods", "POST")
         verify(httpServletResponse, never()).setHeader("Access-Control-Allow-Headers", "")
         verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
-        verify(httpServletResponse).status = HttpServletResponse.SC_OK
+        verify(httpServletResponse, times(1)).status = HttpServletResponse.SC_OK
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -194,11 +194,11 @@ class PreflightRequest {
         val corsServletFilter = TestCORSServletFilter()
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Headers", "X-CSRF, X-Requested-With")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Headers", "X-CSRF, X-Requested-With")
         verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
-        verify(httpServletResponse).status = HttpServletResponse.SC_OK
+        verify(httpServletResponse, times(1)).status = HttpServletResponse.SC_OK
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -217,11 +217,11 @@ class PreflightRequest {
         corsServletFilter.policies.accessControlMaxAge = 300
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Methods", "POST")
         verify(httpServletResponse, never()).setHeader("Access-Control-Allow-Headers", "")
-        verify(httpServletResponse).setHeader("Access-Control-Max-Age", "300")
-        verify(httpServletResponse).status = HttpServletResponse.SC_OK
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Max-Age", "300")
+        verify(httpServletResponse, times(1)).status = HttpServletResponse.SC_OK
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -240,8 +240,8 @@ class PreflightRequest {
         corsServletFilter.policies.preflightContinueChain = true
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Methods", "POST")
         verify(httpServletResponse, never()).setHeader("Access-Control-Allow-Headers", "")
         verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
         verify(filterChain).doFilter(httpServletRequest, httpServletResponse)
@@ -262,11 +262,11 @@ class PreflightRequest {
         corsServletFilter.policies.preflightPreferNoContent = true
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Methods", "POST")
         verify(httpServletResponse, never()).setHeader("Access-Control-Allow-Headers", "")
         verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
-        verify(httpServletResponse).status = HttpServletResponse.SC_NO_CONTENT
+        verify(httpServletResponse, times(1)).status = HttpServletResponse.SC_NO_CONTENT
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -285,12 +285,12 @@ class PreflightRequest {
         corsServletFilter.policies.supportsCredentials = true
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "http://abc.com:8080")
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Credentials", "true")
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Origin", "http://abc.com:8080")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Credentials", "true")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Methods", "POST")
         verify(httpServletResponse, never()).setHeader("Access-Control-Allow-Headers", "")
         verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
-        verify(httpServletResponse).status = HttpServletResponse.SC_OK
+        verify(httpServletResponse, times(1)).status = HttpServletResponse.SC_OK
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -309,11 +309,11 @@ class PreflightRequest {
         corsServletFilter.policies.listOfMethods = listOf("GET", "POST")
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "GET, POST")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Methods", "GET, POST")
         verify(httpServletResponse, never()).setHeader("Access-Control-Allow-Headers", "")
         verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
-        verify(httpServletResponse).status = HttpServletResponse.SC_OK
+        verify(httpServletResponse, times(1)).status = HttpServletResponse.SC_OK
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -352,11 +352,11 @@ class PreflightRequest {
         corsServletFilter.policies.listOfHeaders = listOf("Authorization", "X-Requested-With")
         corsServletFilter.doFilter(httpServletRequest, httpServletResponse, filterChain)
 
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Origin", "*")
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Methods", "POST")
-        verify(httpServletResponse).setHeader("Access-Control-Allow-Headers", "Authorization, X-Requested-With")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Origin", "*")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Methods", "POST")
+        verify(httpServletResponse, times(1)).setHeader("Access-Control-Allow-Headers", "Authorization, X-Requested-With")
         verify(httpServletResponse, never()).setHeader("Access-Control-Max-Age", "")
-        verify(httpServletResponse).status = HttpServletResponse.SC_OK
+        verify(httpServletResponse, times(1)).status = HttpServletResponse.SC_OK
         verify(filterChain, never()).doFilter(httpServletRequest, httpServletResponse)
     }
 
@@ -390,12 +390,12 @@ class XML {
         `when`(filterConfig.getInitParameter("cors-policies")).thenReturn("test-cors-policies.xml")
 
         val corsServletFilter = object : CORSServletFilter() {
+
             public override var policies: CORSPolicies
                 get() = super.policies
                 set(value) {
                     super.policies = value
                 }
-
         }
 
         corsServletFilter.init(filterConfig)
