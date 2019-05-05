@@ -4,21 +4,22 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
 
 plugins {
-    kotlin("jvm") version "1.3.21"
-    id("org.jetbrains.dokka") version "0.9.17"
+    kotlin("jvm") version "1.3.31"
+    id("org.jetbrains.dokka") version "0.9.18"
     `java-library`
     `maven-publish`
     signing
 }
 
 repositories {
-    jcenter()
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
-    api(kotlin("stdlib-jdk8"))
-    compileOnly("javax:javaee-api:7.0")
+    implementation(kotlin("stdlib-jdk8"))
+
+    compileOnly("javax:javaee-api:8.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.4.0")
     testImplementation("org.mockito:mockito-core:2.24.5")
@@ -37,17 +38,18 @@ tasks.withType<Test> {
 }
 
 tasks.withType<DokkaTask> {
-    moduleName = ""
+    moduleName = "CORS Filter"
+    outputFormat = "javadoc"
+    outputDirectory = "$buildDir/dokka/javadoc"
     includes = listOf("module.md", "packages.md")
     jdkVersion = 8
-    externalDocumentationLinks.add(ExternalDocumentationLinkImpl(URL("https://docs.oracle.com/javaee/7/api/"), URL("https://docs.oracle.com/javaee/7/api/package-list")))
+    externalDocumentationLinks.add(ExternalDocumentationLinkImpl(URL("https://docs.oracle.com/javaee/8/api/"), URL("https://docs.oracle.com/javaee/8/api/package-list")))
 }
 
 tasks.register<Jar>("javadocJar") {
     archiveClassifier.set("javadoc")
-    from("$projectDir") {
-        include("README")
-    }
+    from("$buildDir/dokka/javadoc")
+    dependsOn("dokka")
 }
 
 tasks.register<Jar>("sourcesJar") {
