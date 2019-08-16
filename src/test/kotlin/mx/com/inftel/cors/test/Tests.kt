@@ -1,6 +1,8 @@
 package mx.com.inftel.cors.test
 
-import mx.com.inftel.cors.*
+import mx.com.inftel.cors.AbstractCORSServletFilter
+import mx.com.inftel.cors.CORSPolicies
+import mx.com.inftel.cors.CORSServletFilter
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.*

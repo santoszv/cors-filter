@@ -202,7 +202,12 @@ abstract class AbstractCORSServletFilter : Filter {
             return
         }
         // Step 4
-        val headerFieldNames = request.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)!!
+        val headerFieldNames = request.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)
+        if (headerFieldNames == null) {
+            chain.doFilter(request, response)
+            return
+        }
+        val headerFieldNamesList = headerFieldNames
                 .asSequence()
                 .filterNotNull()
                 .flatMap {
@@ -227,7 +232,7 @@ abstract class AbstractCORSServletFilter : Filter {
         }
         // Step 6
         if (policies.listOfHeaders.isNotEmpty()) {
-            headerFieldNames.forEach { headerFieldName ->
+            headerFieldNamesList.forEach { headerFieldName ->
                 val match = policies.listOfHeaders.firstOrNull {
                     it.equals(headerFieldName, true)
                 }
@@ -258,8 +263,8 @@ abstract class AbstractCORSServletFilter : Filter {
         // Step 10
         if (policies.listOfHeaders.isNotEmpty()) {
             response.setHeader(RESP_HEADER_AC_ALLOW_HEADERS, policies.listOfHeaders.joinToString(", "))
-        } else if (headerFieldNames.isNotEmpty()) {
-            response.setHeader(RESP_HEADER_AC_ALLOW_HEADERS, headerFieldNames.joinToString(", "))
+        } else if (headerFieldNamesList.isNotEmpty()) {
+            response.setHeader(RESP_HEADER_AC_ALLOW_HEADERS, headerFieldNamesList.joinToString(", "))
         }
         // Continue filter chain or set response status
         when {
