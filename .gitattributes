@@ -8,5 +8,6 @@ gradlew.bat     text eol=crlf
 *.kt            text
 *.kts           text
 *.java          text
+*.md            text eol=crlf
 *.properties    text
 *.xml           text
