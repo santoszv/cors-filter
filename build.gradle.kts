@@ -2,7 +2,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.3.31"
+    kotlin("jvm") version "1.3.41"
     id("org.jetbrains.dokka") version "0.9.18"
     `java-library`
     `maven-publish`
@@ -19,9 +19,9 @@ dependencies {
 
     compileOnly("javax:javaee-api:8.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.4.0")
-    testImplementation("org.mockito:mockito-core:2.24.5")
-    testImplementation("javax:javaee-api:7.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.5.1")
+    testImplementation("org.mockito:mockito-core:3.0.0")
+    testImplementation("javax:javaee-api:8.0")
 }
 
 tasks.withType<KotlinCompile> {
