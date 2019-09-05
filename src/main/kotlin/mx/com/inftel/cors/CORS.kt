@@ -133,7 +133,7 @@ abstract class AbstractCORSServletFilter : Filter {
     override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
         val httpServletRequest = request as HttpServletRequest
         val httpServletResponse = response as HttpServletResponse
-        when (httpServletRequest.method!!) {
+        when (httpServletRequest.method) {
             "OPTIONS" -> doFilterPreflight(httpServletRequest, httpServletResponse, chain)
             else -> doFilterActual(httpServletRequest, httpServletResponse, chain)
         }
@@ -143,23 +143,34 @@ abstract class AbstractCORSServletFilter : Filter {
      * Process Actual Request.
      */
     private fun doFilterActual(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
-        // Step 1
+        // 1. If the Origin header is not present terminate this set of steps. The request is outside the scope of this
+        //    specification.
         val originHeader = request.getHeader(REQ_HEADER_ORIGIN)
         if (originHeader == null) {
             chain.doFilter(request, response)
             return
         }
-        // Step 2
+        // 2. If the value of the Origin header is not a case-sensitive match for any of the values in list of origins,
+        //    do not set any additional headers and terminate this set of steps.
+        //
+        //    Note: Always matching is acceptable since the list of origins can be unbounded.
         if (policies.listOfOrigins.isNotEmpty()) {
             val match = policies.listOfOrigins.firstOrNull {
-                it.equals(originHeader, true)
+                it.equals(originHeader, false)
             }
             if (match == null) {
                 chain.doFilter(request, response)
                 return
             }
         }
-        // Step 3
+        // 3. If the resource supports credentials add a single Access-Control-Allow-Origin header, with the value of
+        //    the Origin header as value, and add a single Access-Control-Allow-Credentials header with the
+        //    case-sensitive string "true" as value.
+        //
+        //    Otherwise, add a single Access-Control-Allow-Origin header, with either the value of the Origin header or
+        //    the string "*" as value.
+        //
+        //    Note: The string "*" cannot be used for a resource that supports credentials.
         if (policies.supportsCredentials) {
             response.setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, originHeader)
             response.setHeader(RESP_HEADER_AC_ALLOW_CREDENTIALS, "true")
@@ -167,7 +178,12 @@ abstract class AbstractCORSServletFilter : Filter {
         } else {
             response.setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
         }
-        // Step 4
+        // 4. If the list of exposed headers is not empty add one or more Access-Control-Expose-Headers headers, with as
+        //    values the header field names given in the list of exposed headers.
+        //
+        //    Note: By not adding the appropriate headers resource can also clear the preflight result cache of all
+        //    entries where origin is a case-sensitive match for the value of the Origin header and url is a
+        //    case-sensitive match for the URL of the resource.
         if (policies.listOfExposedHeaders.isNotEmpty()) {
             response.setHeader(RESP_HEADER_AC_EXPOSE_HEADERS, policies.listOfExposedHeaders.joinToString(", "))
         }
@@ -179,48 +195,73 @@ abstract class AbstractCORSServletFilter : Filter {
      * Process Preflight Request.
      */
     private fun doFilterPreflight(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
-        // Step 1
-        val originHeader = request.getHeader(REQ_HEADER_ORIGIN)
-        if (originHeader == null) {
+        // 1. If the Origin header is not present terminate this set of steps. The request is outside the scope of this
+        //    specification.
+        val origin = request.getHeader(REQ_HEADER_ORIGIN)
+        if (origin == null) {
             chain.doFilter(request, response)
             return
         }
-        // Step 2
+        // 2. If the value of the Origin header is not a case-sensitive match for any of the values in list of origins
+        //    do not set any additional headers and terminate this set of steps.
+        //
+        //    Note: Always matching is acceptable since the list of origins can be unbounded.
+        //
+        //    Note: The Origin header can only contain a single origin as the user agent will not follow redirects.
         if (policies.listOfOrigins.isNotEmpty()) {
             val match = policies.listOfOrigins.firstOrNull {
-                it.equals(originHeader, true)
+                it.equals(origin, false)
             }
             if (match == null) {
                 chain.doFilter(request, response)
                 return
             }
         }
-        // Step 3
+        // 3. Let `method` be the value as result of parsing the Access-Control-Request-Method header.
+        //
+        //    If there is no Access-Control-Request-Method header or if parsing failed, do not set any additional
+        //    headers and terminate this set of steps. The request is outside the scope of this specification.
         val method = request.getHeader(REQ_HEADER_AC_REQUEST_METHOD)
         if (method == null) {
             chain.doFilter(request, response)
             return
         }
-        // Step 4
-        val headerFieldNames = request.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)
-        if (headerFieldNames == null) {
-            chain.doFilter(request, response)
-            return
+        // 4. Let `header field-names` be the values as result of parsing the Access-Control-Request-Headers headers.
+        //
+        //    If there are no Access-Control-Request-Headers headers let `header field-names` be the empty list.
+        //
+        //    If parsing failed do not set any additional headers and terminate this set of steps. The request is
+        //    outside the scope of this specification.
+        val headerFieldNames = run {
+            val header = request.getHeaders(REQ_HEADER_AC_REQUEST_HEADERS)
+            if (header == null) {
+                // Container does not allow access to header information, so, failed.
+                chain.doFilter(request, response)
+                return
+            }
+            header.asSequence()
+                    .filterNotNull()
+                    .map {
+                        it.trim()
+                    }
+                    .filter {
+                        it.isNotBlank()
+                    }
+                    .flatMap {
+                        it.split(',').asSequence()
+                    }
+                    .map {
+                        it.trim()
+                    }
+                    .filter {
+                        it.isNotBlank()
+                    }
+                    .toList()
         }
-        val headerFieldNamesList = headerFieldNames
-                .asSequence()
-                .filterNotNull()
-                .flatMap {
-                    it.split(',').asSequence()
-                }
-                .map {
-                    it.trim()
-                }
-                .filter {
-                    it.isNotBlank()
-                }
-                .toList()
-        // Step 5
+        // 5. If `method` is not a case-sensitive match for any of the values in list of methods do not set any
+        //    additional headers and terminate this set of steps.
+        //
+        //    Note: Always matching is acceptable since the list of methods can be unbounded.
         if (policies.listOfMethods.isNotEmpty()) {
             val match = policies.listOfMethods.firstOrNull {
                 it.equals(method, false)
@@ -230,9 +271,12 @@ abstract class AbstractCORSServletFilter : Filter {
                 return
             }
         }
-        // Step 6
+        // 6. If any of the header field-names is not a ASCII case-insensitive match for any of the values in list of
+        //    headers do not set any additional headers and terminate this set of steps.
+        //
+        //    Note: Always matching is acceptable since the list of headers can be unbounded.
         if (policies.listOfHeaders.isNotEmpty()) {
-            headerFieldNamesList.forEach { headerFieldName ->
+            headerFieldNames.forEach { headerFieldName ->
                 val match = policies.listOfHeaders.firstOrNull {
                     it.equals(headerFieldName, true)
                 }
@@ -242,29 +286,52 @@ abstract class AbstractCORSServletFilter : Filter {
                 }
             }
         }
-        // Step 7
+        // 7. If the resource supports credentials add a single Access-Control-Allow-Origin header, with the value of
+        //    the Origin header as value, and add a single Access-Control-Allow-Credentials header with the
+        //    case-sensitive string "true" as value.
+        //
+        //    Otherwise, add a single Access-Control-Allow-Origin header, with either the value of the Origin header or
+        //    the string "*" as value.
+        //
+        //    Note: The string "*" cannot be used for a resource that supports credentials.
         if (policies.supportsCredentials) {
-            response.setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, originHeader)
+            response.setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, origin)
             response.setHeader(RESP_HEADER_AC_ALLOW_CREDENTIALS, "true")
             response.setHeader(RESP_HEADER_VARY, REQ_HEADER_ORIGIN)
         } else {
             response.setHeader(RESP_HEADER_AC_ALLOW_ORIGIN, "*")
         }
-        // Step 8
+        // 8. Optionally add a single Access-Control-Max-Age header with as value the amount of seconds the user agent
+        //    is allowed to cache the result of the request.
         if (policies.accessControlMaxAge >= 0) {
             response.setHeader(RESP_HEADER_AC_MAX_AGE, "${policies.accessControlMaxAge}")
         }
-        // Step 9
+        // 9. If method is a simple method this step may be skipped.
+        //
+        //    Add one or more Access-Control-Allow-Methods headers consisting of (a subset of) the list of methods.
+        //
+        //    Note: If a method is a simple method it does not need to be listed, but this is not prohibited.
+        //
+        //    Note: Since the list of methods can be unbounded, simply returning the method indicated by
+        //          Access-Control-Request-Method (if supported) can be enough.
         if (policies.listOfMethods.isNotEmpty()) {
             response.setHeader(RESP_HEADER_AC_ALLOW_METHODS, policies.listOfMethods.joinToString(", "))
         } else {
             response.setHeader(RESP_HEADER_AC_ALLOW_METHODS, method)
         }
-        // Step 10
+        // 10. If each of the header field-names is a simple header and none is Content-Type, this step may be skipped.
+        //
+        //     Add one or more Access-Control-Allow-Headers headers consisting of (a subset of) the list of headers.
+        //
+        //     Note: If a header field name is a simple header and is not Content-Type, it is not required to be listed.
+        //           Content-Type is to be listed as only a subset of its values makes it qualify as simple header.
+        //
+        //     Note: Since the list of headers can be unbounded, simply returning supported headers from
+        //           Access-Control-Allow-Headers can be enough.
         if (policies.listOfHeaders.isNotEmpty()) {
             response.setHeader(RESP_HEADER_AC_ALLOW_HEADERS, policies.listOfHeaders.joinToString(", "))
-        } else if (headerFieldNamesList.isNotEmpty()) {
-            response.setHeader(RESP_HEADER_AC_ALLOW_HEADERS, headerFieldNamesList.joinToString(", "))
+        } else if (headerFieldNames.isNotEmpty()) {
+            response.setHeader(RESP_HEADER_AC_ALLOW_HEADERS, headerFieldNames.joinToString(", "))
         }
         // Continue filter chain or set response status
         when {
