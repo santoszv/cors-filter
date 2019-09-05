@@ -72,6 +72,7 @@ This specification extends this model in several ways:
         </methods>
         <headers>
             <header>Authorization</header>
+            <header>Content-Type</header>
             <header>X-Anti-CSRF</header>
             <header>X-Requested-With</header>
         </headers>
@@ -95,6 +96,7 @@ This specification extends this model in several ways:
     <cors-policies>
         <headers>
             <header>Authorization</header>
+            <header>Content-Type</header>
         </headers>
         <exposed-headers>
             <header>Content-Length</header>
